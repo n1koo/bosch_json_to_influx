@@ -35,15 +35,20 @@ def _parse_args():
                         default="bosch", type=str)
     parser.add_argument('--dry-run', help='Output to console rather than sending to influx',
                         default=False, type=bool)
+    parser.add_argument('--pump_name', help='Optional heat pump name to use as tag', type=str)
     args = parser.parse_args()
     return args
 
 
-def _parse_json(json_file: str) -> dict:
+def _parse_json(json_file: str, pump_name) -> dict:
     parsed_data = []
     with open(json_file, 'r') as input_json:
         data = json.load(input_json)
         timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+        if pump_name:
+            tags = {"pump_name": pump_name}
+        else:
+            tags = {}
 
         for entry in data:
             if not entry:
@@ -56,7 +61,7 @@ def _parse_json(json_file: str) -> dict:
                 measurement_name = entry['id'][1:].replace("/", "_").lower()
 
                 parsed_entry = {"measurement": measurement_name,
-                                "tags": {},
+                                "tags": tags,
                                 "time": timestamp,
                                 "fields": {
                                     "value": entry['value']},
@@ -72,7 +77,7 @@ def _parse_json(json_file: str) -> dict:
 def main():
     log.info("Starting Bosch json to Influx script")
     args = _parse_args()
-    data = _parse_json(args.input_json_file)
+    data = _parse_json(args.input_json_file, args.pump_name)
     log.debug(data)
 
     influx_client = InfluxDBClient(host=args.influx_db_host, port=args.influx_db_port, database=args.influx_db_database,
