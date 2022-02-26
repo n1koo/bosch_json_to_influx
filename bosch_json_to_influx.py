@@ -53,8 +53,11 @@ def _parse_json(json_file: str, pump_name) -> dict:
         for entry in data:
             if not entry:
                 continue
+            log.debug(entry)
+            log.debug(type(entry))
             # For some reason these are lists with single entry
-            entry = entry[0]
+            if isinstance(entry, list):
+                entry = entry[0]
             if entry['type'] == "floatValue" or entry['type'] == "stringValue":
                 # Change / to _ and lowercase + remove leading ?
                 # eg. /heatSources/numberOfStarts -> heatsources_numberofstarts

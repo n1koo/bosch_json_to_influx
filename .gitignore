@@ -139,3 +139,5 @@ cython_debug/
 
 
 sensor_scan.json
+.env
+*.json
