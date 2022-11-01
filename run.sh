@@ -9,8 +9,15 @@ for name in BOSCH_IP BOSCH_TOKEN BOSCH_PASSWORD INFLUX_DB_HOST INFLUX_DB_DATABAS
     fi
 done
 
+END=1
+DWH=false
+if [ "$PUMP_NAME" = "AWE17" ]; then
+    END=2
+    DWH=true
+fi
+
 echo "HC"
-for i in {1..2}; do
+for i in $(seq 1 $END); do
     echo "[" >>hc$i.json
     bosch_cli query -p /heatingCircuits/hc$i/currentRoomSetpoint --host $BOSCH_IP --protocol HTTP --device IVT --token $BOSCH_TOKEN --password $BOSCH_PASSWORD >>hc$i.json
     echo "," >>hc$i.json
@@ -24,6 +31,9 @@ done
 echo "Sensors"
 bosch_cli scan -s SENSORS --host $BOSCH_IP --protocol HTTP --device IVT --token $BOSCH_TOKEN --password $BOSCH_PASSWORD -o sensors.json
 python3 ./bosch_json_to_influx.py --influx_db_host $INFLUX_DB_HOST --influx_db_database $INFLUX_DB_DATABASE --influx_db_user $INFLUX_DB_USER --influx_db_password $INFLUX_DB_PASSWORD --pump_name $PUMP_NAME --input_json_file sensors.json
-echo "DHW"
-bosch_cli scan -s dhw --host $BOSCH_IP --protocol HTTP --device IVT --token $BOSCH_TOKEN --password $BOSCH_PASSWORD -o dhw.json
-python3 ./bosch_json_to_influx.py --influx_db_host $INFLUX_DB_HOST --influx_db_database $INFLUX_DB_DATABASE --influx_db_user $INFLUX_DB_USER --influx_db_password $INFLUX_DB_PASSWORD --pump_name $PUMP_NAME --input_json_file dhw.json
+
+if $DWH; then
+    echo "DHW"
+    bosch_cli scan -s dhw --host $BOSCH_IP --protocol HTTP --device IVT --token $BOSCH_TOKEN --password $BOSCH_PASSWORD -o dhw.json
+    python3 ./bosch_json_to_influx.py --influx_db_host $INFLUX_DB_HOST --influx_db_database $INFLUX_DB_DATABASE --influx_db_user $INFLUX_DB_USER --influx_db_password $INFLUX_DB_PASSWORD --pump_name $PUMP_NAME --input_json_file dhw.json
+fi
