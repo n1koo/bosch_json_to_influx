@@ -1,0 +1,11 @@
+[project]
+name = "bosch-json-to-influx"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "bosch-thermostat-client==0.26.1",
+    "coloredlogs==15.0",
+    "influxdb==5.3.2",
+]

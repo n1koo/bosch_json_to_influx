@@ -1,11 +1,12 @@
-from influxdb import InfluxDBClient
 import json
 import os
 import sys
 import argparse
 import logging
-import coloredlogs
 from datetime import datetime
+
+from influxdb import InfluxDBClient
+import coloredlogs
 
 log = logging.getLogger("bosch_json_to_influx")
 LOGLEVEL = os.environ.get('LOG_LEVEL', 'INFO').upper()
